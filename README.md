@@ -1,4 +1,7 @@
 # setu
+
+基于原作者插件进行修改！原作者仓库链接：[astrbot_plugin_lolicon_image-master](https://github.com/rikkamiss/astrbot_plugin_lolicon_image)
+
 *修改说明:**
 1.  **导入 `asyncio`:** 用于获取当前时间。
 2.  **添加 `self.cd` 和 `self.last_usage`:**
@@ -25,7 +28,8 @@
 1.  重新加载或重启你的 AstrBot 插件。
 4.  使用  `/setu_help`获取使用帮助
 2.  使用 `/setu` 指令，你会受到冷却时间限制。
-3.  使用 `/setucd <冷却时间>` (例如 `/setucd 30`) 设置冷却时间，单位为秒。
+3.  使用 `/taisele` 指令，你会受到冷却时间限制。
+4.  使用 `/setucd <冷却时间>` (例如 `/setucd 30`) 设置冷却时间，单位为秒。
 # 支持
 
 [帮助文档](https://astrbot.soulter.top/center/docs/%E5%BC%80%E5%8F%91/%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/
