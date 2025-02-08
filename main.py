@@ -18,6 +18,11 @@ class SetuPlugin(Star):
             resp = await client.get("https://api.lolicon.app/setu/v2?r18=0")
             resp.raise_for_status()
             return resp.json()
+    async def fetch_taisele(self):
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get("https://api.lolicon.app/setu/v2?r18=1")
+            resp.raise_for_status()
+            return resp.json()
 
     @filter.command("setu")
     async def setu(self, event: AstrMessageEvent):
@@ -32,6 +37,41 @@ class SetuPlugin(Star):
         async with self.semaphore:  # 获取信号量，限制并发
             try:
                 data = await self.fetch_setu() # 使用单独的函数获取数据
+                if data['data']:
+                    image_url = data['data'][0]['urls']['original']
+                    chain = [
+                        At(qq=event.get_sender_id()),
+                        Plain("给你一张涩图："),
+                        Image.fromURL(image_url, size='small'),
+                    ]
+                    yield event.chain_result(chain)
+                    self.last_usage[user_id] = now
+                else:
+                    yield event.plain_result("没有找到涩图。")
+            except httpx.HTTPStatusError as e:
+                yield event.plain_result(f"获取涩图时发生HTTP错误: {e.response.status_code}")
+            except httpx.TimeoutException:
+                yield event.plain_result("获取涩图超时，请稍后重试。")
+            except httpx.HTTPError as e:
+                yield event.plain_result(f"获取涩图时发生网络错误: {e}")
+            except json.JSONDecodeError as e:
+                yield event.plain_result(f"解析JSON时发生错误: {e}")
+            except Exception as e:
+                self.context.logger.exception("Setu command error:") # 记录异常，方便调试
+                yield event.plain_result(f"发生未知错误: {e}")
+    @filter.command("taisele")
+    async def taisele(self, event: AstrMessageEvent):
+        user_id = event.get_sender_id()
+        now = asyncio.get_event_loop().time()
+
+        if user_id in self.last_usage and (now - self.last_usage[user_id]) < self.cd:
+            remaining_time = self.cd - (now - self.last_usage[user_id])
+            yield event.plain_result(f"冷却中，请等待 {remaining_time:.1f} 秒后重试。")
+            return
+
+        async with self.semaphore:  # 获取信号量，限制并发
+            try:
+                data = await self.fetch_taisele() # 使用单独的函数获取数据
                 if data['data']:
                     image_url = data['data'][0]['urls']['original']
                     chain = [
@@ -71,11 +111,13 @@ class SetuPlugin(Star):
 
         **可用命令:**
         - `/setu`: 发送一张随机涩图。
+        - `/taisele`: 发送一张随机R18涩图。
         - `/setucd <冷却时间>`: 设置涩图指令的冷却时间（秒）。
         - `/setu_help`: 显示此帮助信息。
 
         **使用方法:**
         - 直接发送 `/setu` 即可获取一张随机涩图。
+        - 直接发送 `/taisele` 即可获取一张随机R18涩图。
         - 使用 `/setucd 15` 将冷却时间设置为 15 秒。
 
         **注意:**
