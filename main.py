@@ -13,19 +13,21 @@ class SetuPlugin(Star):
         self.last_usage = {} # 存储每个用户上次使用指令的时间
         self.semaphore = asyncio.Semaphore(10)  # 限制并发请求数量为 10
 
-    async def fetch_setu(self):
+    async def fetch_setu(self, prompt):
+        tag = prompt.replace(" ", "&tag=")
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get("https://api.lolicon.app/setu/v2?r18=0")
+            resp = await client.get(f"https://api.lolicon.app/setu/v2?r18=0&tag={tag}")
             resp.raise_for_status()
             return resp.json()
-    async def fetch_taisele(self):
+    async def fetch_taisele(self, prompt):
+        tag = prompt.replace(" ", "&tag=")
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.get("https://api.lolicon.app/setu/v2?r18=1")
+            resp = await client.get(f"https://api.lolicon.app/setu/v2?r18=1&tag={tag}")
             resp.raise_for_status()
             return resp.json()
 
     @filter.command("setu")
-    async def setu(self, event: AstrMessageEvent):
+    async def setu(self, event: AstrMessageEvent, prompt: str = ""):
         user_id = event.get_sender_id()
         now = asyncio.get_event_loop().time()
 
@@ -36,7 +38,7 @@ class SetuPlugin(Star):
 
         async with self.semaphore:  # 获取信号量，限制并发
             try:
-                data = await self.fetch_setu() # 使用单独的函数获取数据
+                data = await self.fetch_setu(prompt) # 使用单独的函数获取数据
                 if data['data']:
                     image_url = data['data'][0]['urls']['original']
                     chain = [
@@ -60,7 +62,7 @@ class SetuPlugin(Star):
                 self.context.logger.exception("Setu command error:") # 记录异常，方便调试
                 yield event.plain_result(f"发生未知错误: {e}")
     @filter.command("taisele")
-    async def taisele(self, event: AstrMessageEvent):
+    async def taisele(self, event: AstrMessageEvent, prompt: str = ""):
         user_id = event.get_sender_id()
         now = asyncio.get_event_loop().time()
 
@@ -71,7 +73,7 @@ class SetuPlugin(Star):
 
         async with self.semaphore:  # 获取信号量，限制并发
             try:
-                data = await self.fetch_taisele() # 使用单独的函数获取数据
+                data = await self.fetch_taisele(prompt) # 使用单独的函数获取数据
                 if data['data']:
                     image_url = data['data'][0]['urls']['original']
                     chain = [
