@@ -27,10 +27,10 @@ class SetuPlugin(Star):
             return resp.json()
 
     @filter.command("setu")
-    async def setu(self, event: AstrMessageEvent, prompt: str = ""):
+    async def setu(self, event: AstrMessageEvent, prompt1: str = "", prompt2: str = "", prompt3: str = ""):
         user_id = event.get_sender_id()
         now = asyncio.get_event_loop().time()
-
+        prompt = prompt1 + (" " if len(prompt1) > 0 else "" ) + prompt2 + (" " if len(prompt2) > 0 else "" ) + prompt3 + (" " if len(prompt3) > 0 else "" )
         if user_id in self.last_usage and (now - self.last_usage[user_id]) < self.cd:
             remaining_time = self.cd - (now - self.last_usage[user_id])
             yield event.plain_result(f"冷却中，请等待 {remaining_time:.1f} 秒后重试。")
@@ -62,10 +62,10 @@ class SetuPlugin(Star):
                 self.context.logger.exception("Setu command error:") # 记录异常，方便调试
                 yield event.plain_result(f"发生未知错误: {e}")
     @filter.command("taisele")
-    async def taisele(self, event: AstrMessageEvent, prompt: str = ""):
+    async def taisele(self, event: AstrMessageEvent, prompt1: str = "", prompt2: str = "", prompt3: str = ""):
         user_id = event.get_sender_id()
         now = asyncio.get_event_loop().time()
-
+        prompt = prompt1 + (" " if len(prompt1) > 0 else "" ) + prompt2 + (" " if len(prompt2) > 0 else "" ) + prompt3 + (" " if len(prompt3) > 0 else "" )
         if user_id in self.last_usage and (now - self.last_usage[user_id]) < self.cd:
             remaining_time = self.cd - (now - self.last_usage[user_id])
             yield event.plain_result(f"冷却中，请等待 {remaining_time:.1f} 秒后重试。")
